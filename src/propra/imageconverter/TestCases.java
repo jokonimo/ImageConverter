@@ -188,36 +188,15 @@ public class TestCases {
         Encoder.encode("../KE2_Konvertiert/test_05_base32.tga", encodeBase32);
 
         compareFiles(test_01, "../KE2_Konvertiert/test_05_base32.tga.base-32");
-
-        //test 2
-        /*
-        String test_02 = "../KE2_TestBilder/test_06_base32.propra.base-32";
-        Encoder.decode(test_02, encodeBase32);
-        Encoder.encode("../KE2_Konvertiert/test_06_base32.propra", encodeBase32);
-
-        compareFiles(test_02, "../KE2_Konvertiert/test_06_base32.propra.base-32");
-
-        //test 3
-        String test_03 = "../KE2_TestBilder/test_02_rle.tga";
-        Encoder.encode(test_03, encodeBase32);
-        Encoder.decode("../KE2_Konvertiert/test_02_rle.tga.base-32", encodeBase32);
-
-        compareFiles(test_03, "../KE2_Konvertiert/test_02_rle.tga");
-
-        //test 4
-        String test_04 = "../KE2_TestBilder/test_04_rle.propra";
-        Encoder.encode(test_04, encodeBase32);
-        Encoder.decode("../KE2_Konvertiert/test_04_rle.propra.base-32", encodeBase32);
-
-        compareFiles(test_04, "../KE2_Konvertiert/test_04_rle.propra");
-
-         */
     }
 
     //this function checks file equality
     private static void compareFiles(String inFile, String outFile) throws IOException {
-        byte[] in = readFile(inFile);
-        byte[] out = readFile(outFile);
+        String inputFileName = inFile.replace("--input=", "");
+        String outputFileName = outFile.replace("--output=", "");
+
+        byte[] in = readFile(inputFileName);
+        byte[] out = readFile(outputFileName);
 
         System.out.println("images equal: " + Arrays.equals(in, out));
         int count = 0;
@@ -237,46 +216,74 @@ public class TestCases {
     }
 
     public static void main(String[] args) throws IOException {
-        //testEncodingBaseN1();
-        //testEncodingBaseN2();
-        //testEncodingBaseN3();
-        //testsFromArgs(new String[]{"test-encoding"});
+        // KE3 - test 01
+        /*
+        String input1 = "--input=../KE3_TestBilder/test_01_uncompressed.tga";
+        String output1 = "--output=../KE3_Konvertiert/test_01.propra";
+        String compressionArg1 = "--compression=rle";
 
-        /*PropraConverter converter = new PropraConverter();
-        //converter.testStreaming("../KE1_TestBilder/test_03_uncompressed.propra", "../KE2_Konvertiert/test_03.tga");
+        runMin(input1, output1, compressionArg1);
 
-        ImageConverterUtil util = new ImageConverterUtil();
+        String input1back =  "--input=../KE3_Konvertiert/test_01.propra";
+        String output1back = "--output=../KE3_Konvertiert/test_01_uncompressed_zuruck.tga";
+        String compressionArg1back = "--compression=uncompressed";
 
-        converter.convertToTga(
-                ImageConverterUtil.readFile(
-                        "../KE1_TestBilder/test_03_uncompressed.propra"
-                ),
-                "../KE2_Konvertiert/test_03_nostreaming.tga"
-        );
+        runMin(input1back, output1back, compressionArg1back);
 
-        compareFiles("../KE2_Konvertiert/test_03.tga", "../KE2_Konvertiert/test_03_nostreaming.tga");*/
+        compareFiles(input1, output1back);
 
+
+        // KE3 - test02
+        String input2 = "--input=../KE3_TestBilder/test_02_rle.tga";
+        String output2 = "--output=../KE3_Konvertiert/test_02.propra";
+        String compressionArg2 = "--compression=uncompressed";
+
+        runMin(input2, output2, compressionArg2);
+
+        String input2back =  "--input=../KE3_Konvertiert/test_02.propra";
+        String output2back = "--output=../KE3_Konvertiert/test_02_rle_zurück.tga";
+        String compressionArg2back = "--compression=rle";
+
+        runMin(input2back, output2back, compressionArg2back);
+
+        // KE3 - test03
+        String input3 = "--input=../KE3_TestBilder/test_03_uncompressed.propra";
+        String output3 = "--output=../KE3_Konvertiert/test_03.tga";
+        String compressionArg3 = "--compression=rle";
+
+        runMin(input3, output3, compressionArg3);
+
+        // KE3 - test04
+        String input4 = "--input=../KE3_TestBilder/test_04_rle.propra";
+        String output4 = "--output=../KE3_Konvertiert/test_04.tga";
+        String compressionArg4 = "--compression=uncompressed";
+
+        runMin(input4, output4, compressionArg4);
+
+        // KE3 - test05
+        String input5 = "--input=../KE3_TestBilder/test_05_huffman.propra";
+        String output5 = "--output=../KE3_Konvertiert/test_05.tga";
+        String compressionArg5 = "--compression=rle";
+
+        runMin(input5, output5, compressionArg5);
+         */
+
+
+        // KE3 - test05 uncompressed
         String input = "--input=../KE3_TestBilder/test_05_huffman.propra";
+        String output = "--output=../KE3_Konvertiert/test_05_uncompressed.tga";
+        String compressionArg = "--compression=uncompressed";
 
+        runMin(input, output, compressionArg);
+    }
+
+    private static void runMin(String input, String output, String compressionArg) throws IOException {
         ImageConverterUtil util = new ImageConverterUtil();
         String inputFileName = input.replace("--input=", "");
-
-        String output = "--output=../KE3_Konvertiert/test_05.tga";
-
-        String compressionArg = "--compression=rle";
-
         String outputFileName = output.replace("--output=", "");
-
         String compression = compressionArg.replace("--compression=", "");
-
         byte[] buf = readFile(inputFileName);
         util.convert(inputFileName, outputFileName, buf, compression);
-
-        /*PropraConverter propraConverter = new PropraConverter();
-
-        PropraConverter.Tree tree = propraConverter.createHuffmannTree();
-
-        tree.printPreorder(tree.root);*/
     }
 
     //this function tests the encoding and decoding

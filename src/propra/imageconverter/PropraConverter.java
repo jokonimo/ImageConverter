@@ -66,84 +66,11 @@ public class PropraConverter extends Converter {
         }
     }
 
-    private class Node {
-        byte key;
-        Node left, right, parent;
-
-        public boolean isBlatt = false;
-
-        public Node(byte item)
-        {
-            key = item;
-            left = right = parent = null;
-        }
-    }
-
-    public class Tree{
-        Node root;
-
-        public Tree(){
-            root = new Node((byte)0);
-        }
-
-        public boolean insert(Node newNode){
-            Optional<Node> node = this.findNextFreeNode(this.root, null);
-            if(node.isPresent()){
-                Node nd = node.get();
-                if(nd.left == null){
-                    nd.left = newNode;
-                }else {
-                    nd.right = newNode;
-                }
-                return true;
-            }else {
-                return false;
-            }
-        }
-
-        public void printPreorder(Node node)
-        {
-            if (node == null)
-                return;
-
-            /* first print data of node */
-            System.out.print(node.key + " ");
-
-            if(node.isBlatt){
-                System.out.println("");
-            }
-
-            /* then recur on left subtree */
-            printPreorder(node.left);
-
-            /* now recur on right subtree */
-            printPreorder(node.right);
-        }
-
-        public Optional<Node> findNextFreeNode(Node node, Node prev){
-            if(node == null){
-                return Optional.of(prev);
-            }
-
-            if(node.isBlatt){
-                return Optional.empty();
-            }
-
-            Optional<Node> left = findNextFreeNode(node.left, node);
-
-            if(left.isPresent()){
-                return left;
-            }else {
-                return findNextFreeNode(node.right, node);
-            }
-        }
-    }
-
     private byte[] deCompressHuffmann(byte[] buf){
         //uncompress buf
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        Tree tree = new Tree();
+        HuffmannTree tree = new HuffmannTree();
         int i = 1;
 
 
@@ -178,7 +105,7 @@ public class PropraConverter extends Converter {
         for(; i < myBitSet.length; i++){
 
             boolean j = myBitSet[i];
-            Node newNode;
+            HuffmannNode newNode;
 
             if(j){
                 //Blatt
@@ -197,7 +124,7 @@ public class PropraConverter extends Converter {
                 val += (myBitSet[i + 8] ? 1 : 0);
 
 
-                newNode = new Node(val);
+                newNode = new HuffmannNode(val);
                 newNode.isBlatt = true;
 
                 if(!tree.insert(newNode)){
@@ -208,7 +135,7 @@ public class PropraConverter extends Converter {
                     i = i + 8;
                 };
             } else {
-                newNode = new Node((byte)0);
+                newNode = new HuffmannNode((byte)0);
                 if(!tree.insert(newNode)){
 
                     System.out.println("over" + i);
@@ -217,11 +144,7 @@ public class PropraConverter extends Converter {
             }
         }
 
-        tree.printPreorder(tree.root);
-
-        //create uncompressed data
-
-        Node cur = tree.root;
+        HuffmannNode cur = tree.root;
 
         for(; i < myBitSet.length; i++){
             boolean curBit = myBitSet[i];
@@ -239,13 +162,20 @@ public class PropraConverter extends Converter {
             }
         }
 
-
-        System.out.println("counter: " + counter);
-
         return out.toByteArray();
     }
 
     private void convertHuffMannPropraToRleTga(byte[] buf, String outPutFileName) throws IOException {
+        byte[] unCompressedImageData = this.deCompressHuffmann(Arrays.copyOfRange(buf, PROPRA_HEADER_SIZE, buf.length));
+        byte[] uncompressedPropra = new byte[PROPRA_HEADER_SIZE + unCompressedImageData.length];
+
+        System.arraycopy(buf, 0, uncompressedPropra, 0, PROPRA_HEADER_SIZE);
+        System.arraycopy(unCompressedImageData, 0, uncompressedPropra, PROPRA_HEADER_SIZE, unCompressedImageData.length);
+
+        this.convertUncompressedToRleTga(uncompressedPropra, outPutFileName);
+    }
+
+    private void convertHuffMannToUncompressedTga(byte[] buf, String outPutFileName) throws IOException {
         byte[] unCompressedImageData = this.deCompressHuffmann(Arrays.copyOfRange(buf, PROPRA_HEADER_SIZE, buf.length));
         byte[] uncompressedPropra = new byte[PROPRA_HEADER_SIZE + unCompressedImageData.length];
 
@@ -254,14 +184,7 @@ public class PropraConverter extends Converter {
         System.arraycopy(buf, 0, uncompressedPropra, 0, PROPRA_HEADER_SIZE);
         System.arraycopy(unCompressedImageData, 0, uncompressedPropra, PROPRA_HEADER_SIZE, unCompressedImageData.length);
 
-        //this.convertUncompressedToRleTga(uncompressedPropra, outPutFileName);
-
-        //System.out.println("test1");
-        this.convertUncompressedToRleTga(uncompressedPropra, outPutFileName);
-    }
-
-    private void convertHuffMannToUncompressedTga(byte[] buf, String outPutFileName) {
-        System.out.println("test2");
+        this.convertToTga(uncompressedPropra, outPutFileName);
     }
 
     private void convertRlePropraToUncompressedPropra(byte[] buf, String outPutFileName) throws IOException {
